@@ -2,7 +2,6 @@ Flask==1.0.2
 line-bot-sdk==2.0.1
 configparser==5.0.0
 pandas
-configparser==5.0.0
 zhon==1.1.5
 requests==2.21.0
 beautifulsoup4==4.7.1
