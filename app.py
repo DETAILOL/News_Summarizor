@@ -3,7 +3,6 @@
 
 
 import pandas as pd
-import pyodbc
 import configparser
 from zhon.hanzi import punctuation
 
