@@ -34,7 +34,6 @@ line_bot_api = LineBotApi(config.get('line-bot', 'channel_access_token'))
 handler = WebhookHandler(config.get('line-bot', 'channel_secret'))
 
 def summarize(text, per):
-    spacy.cli.download("en_core_web_sm")
     nlp = spacy.load('en_core_web_sm')
     # 分句
     doc = nlp(text)
@@ -99,6 +98,8 @@ def callback():
 def summarizor(event):
 
     if '新聞' in event.message.text:
+        spacy.cli.download("en_core_web_sm")
+
         # # 擷取每日新聞摘要
         # 新聞主頁
         request = rq.get("https://venturebeat.com/")
@@ -147,11 +148,11 @@ def summarizor(event):
             news_df['Summary'][index] = summary
 
         
-        # for title, link, summary in zip(news_df['Title'], news_df['Link'], news_df['Summary']):
-        line_bot_api.push_message(
-                event.source.user_id,
-                TextSendMessage(text=('新聞標題:', title, '連結:', '摘要:', summary))
-        )
+        for title, link, summary in zip(news_df['Title'], news_df['Link'], news_df['Summary']):
+            line_bot_api.push_message(
+                    event.source.user_id,
+                    TextSendMessage(text=('新聞標題:', title, '連結:', link, '摘要:', summary))
+            )
 
 if __name__ == "__main__":
     app.run()
