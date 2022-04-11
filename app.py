@@ -110,7 +110,7 @@ def summarizor(event):
         news_df = []
         articles = parse_content.findAll('article')
 
-        for a in articles:
+        for a in articles[:5]:
             if a.select('a')[0].find('h2'):
                 news_title = a.select('a')[0].select('h2')[0].text
                 print('新聞標題：', news_title)
