@@ -1,4 +1,12 @@
 Flask==1.0.2
 line-bot-sdk==2.0.1
 configparser==5.0.0
+pandas
+configparser
+zhon
+request
+bs4
+lxml
+spacy
+heapq
 gunicorn
