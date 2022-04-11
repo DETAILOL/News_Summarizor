@@ -70,52 +70,7 @@ def summarize(text, per):
     
     return summary
 
-# # 擷取每日新聞摘要
-# 新聞主頁
-request = rq.get("https://venturebeat.com/")
-# print(request)
-parse_content = BeautifulSoup(request.text, "lxml")
-# print(parse_content)
 
-news_df = []
-articles = parse_content.findAll('article')
-
-for a in articles:
-    if a.select('a')[0].find('h2'):
-        news_title = a.select('a')[0].select('h2')[0].text
-        print('新聞標題：', news_title)
-        news_link = a.select('a')[0]['href']
-        print('連結：', news_link)
-        
-    else:
-        news_title = a.select('h2')[0].select('a')[0].text
-        print('新聞標題：', news_title)
-        news_link = a.select('a')[0]['href']
-        print('連結：', news_link)
-
-    response = rq.get(news_link)
-    parse_content = response.content.decode()
-    html = etree.HTML(parse_content)
-    topics = html.xpath("//div[@class='viafoura'][2]//div[@class='vf-topic-follow']//span[@class='vf-topic-name']//text()")
-    time = html.xpath("//time//text()")[0]
-    author = html.xpath("//div[@class='viafoura'][1]//div[@class='vf-topic-follow']//span[@class='vf-topic-name']//text()")[0]
-    contents = html.xpath("//div[@class='article-content']/descendant::text()[not(ancestor::div[contains(@class, 'post-boilerplate boilerplate')]) and not(ancestor::style)]")
-    c_list = []
-    for c in contents:
-        c_list.append(c)
-    content = ''.join(c_list)
-    
-    news_df.append([news_title, topics, time, author, content, news_link])
-
-
-news_df = pd.DataFrame(news_df, columns=['Title', 'Topics', 'Time', 'Author', 'Content', 'Link'])
-news_df.insert(6, 'Summary', '')
-
-for title, content in zip(news_df['Title'], news_df['Content']):
-    index = news_df['Title'] == title
-    content = content.replace('\n', '').replace('\t', '').replace('\xa0', '')
-    summary = summarize(content, 0.1)
-    news_df['Summary'][index] = summary
 
 
 @app.route("/callback", methods=['POST'])
@@ -141,8 +96,57 @@ def callback():
     return 'OK'
     
 @handler.add(MessageEvent, message=TextMessage)
-def reminder(event):
+def summarizor(event):
+
     if '新聞' in event.message.text:
+        # # 擷取每日新聞摘要
+        # 新聞主頁
+        request = rq.get("https://venturebeat.com/")
+        # print(request)
+        parse_content = BeautifulSoup(request.text, "lxml")
+        # print(parse_content)
+
+        news_df = []
+        articles = parse_content.findAll('article')
+
+        for a in articles:
+            if a.select('a')[0].find('h2'):
+                news_title = a.select('a')[0].select('h2')[0].text
+                print('新聞標題：', news_title)
+                news_link = a.select('a')[0]['href']
+                print('連結：', news_link)
+                
+            else:
+                news_title = a.select('h2')[0].select('a')[0].text
+                print('新聞標題：', news_title)
+                news_link = a.select('a')[0]['href']
+                print('連結：', news_link)
+
+            response = rq.get(news_link)
+            parse_content = response.content.decode()
+            html = etree.HTML(parse_content)
+            topics = html.xpath("//div[@class='viafoura'][2]//div[@class='vf-topic-follow']//span[@class='vf-topic-name']//text()")
+            time = html.xpath("//time//text()")[0]
+            author = html.xpath("//div[@class='viafoura'][1]//div[@class='vf-topic-follow']//span[@class='vf-topic-name']//text()")[0]
+            contents = html.xpath("//div[@class='article-content']/descendant::text()[not(ancestor::div[contains(@class, 'post-boilerplate boilerplate')]) and not(ancestor::style)]")
+            c_list = []
+            for c in contents:
+                c_list.append(c)
+            content = ''.join(c_list)
+            
+            news_df.append([news_title, topics, time, author, content, news_link])
+
+
+        news_df = pd.DataFrame(news_df, columns=['Title', 'Topics', 'Time', 'Author', 'Content', 'Link'])
+        news_df.insert(6, 'Summary', '')
+
+        for title, content in zip(news_df['Title'], news_df['Content']):
+            index = news_df['Title'] == title
+            content = content.replace('\n', '').replace('\t', '').replace('\xa0', '')
+            summary = summarize(content, 0.1)
+            news_df['Summary'][index] = summary
+
+        
         for title, link, summary in zip(news_df['Title'], news_df['Link'], news_df['Summary']):
             line_bot_api.push_message(
                     event.source.user_id,
