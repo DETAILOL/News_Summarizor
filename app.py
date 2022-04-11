@@ -110,7 +110,7 @@ def summarizor(event):
         news_df = []
         articles = parse_content.findAll('article')
 
-        for a in articles[:5]:
+        for a in articles[:3]:
             if a.select('a')[0].find('h2'):
                 news_title = a.select('a')[0].select('h2')[0].text
                 print('新聞標題：', news_title)
@@ -154,8 +154,12 @@ def summarizor(event):
             
             line_bot_api.push_message(
                     event.source.user_id,
-                    TextSendMessage(text=('新聞標題:', title, '連結:', link))
+                    TextSendMessage(text=('新聞標題:', title))
             )
+            line_bot_api.push_message(
+                    event.source.user_id,
+                    TextSendMessage(text=('連結:', link))
+            ) 
             line_bot_api.push_message(
                     event.source.user_id,
                     TextSendMessage(text=('摘要:', summary))
