@@ -142,6 +142,7 @@ def summarizor(event):
         news_df.insert(6, 'Summary', '')
 
         for title, content in zip(news_df['Title'], news_df['Content']):
+            print('ffffffffffff')
             index = news_df['Title'] == title
             content = content.replace('\n', '').replace('\t', '').replace('\xa0', '')
             summary = summarize(content, 0.1)
