@@ -151,9 +151,10 @@ def summarizor(event):
         
         for title, link, summary in zip(news_df['Title'], news_df['Link'], news_df['Summary']):
             print('gggggggggggggg')
+            # ('新聞標題:', title, '連結:', link, '摘要:', summary)
             line_bot_api.push_message(
                     event.source.user_id,
-                    TextSendMessage(text=['新聞標題:', title, '連結:', link, '摘要:', summary])
+                    TextSendMessage(text=summary)
             )
 
 if __name__ == "__main__":
