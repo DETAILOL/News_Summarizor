@@ -1,0 +1,3 @@
+[line-bot]
+channel_access_token = Xiu5JFUObr1NrML9CfgfXdCEPTLCGIpZKKToQYFYYMm5zlXwvYobdAJjk9gU7CHAyHf1lvJyZMHgY4mONA/I4LNNRMUeVPqXtufLKroD/NQcJBi+OkG/va2XOHhZDpuC624HF/z47hQtYpD8tUzZ5AdB04t89/1O/w1cDnyilFU=
+channel_secret = 9118f2e48bc4a6ae45f594525ebf9860
