@@ -99,7 +99,10 @@ def summarizor(event):
 
     if '新聞' in event.message.text:
         spacy.cli.download("en_core_web_sm")
-
+        line_bot_api.push_message(
+                    event.source.user_id,
+                    TextSendMessage(text='等我一下，我要消化一下..')
+            )
         # # 擷取每日新聞摘要
         # 新聞主頁
         request = rq.get("https://venturebeat.com/")
@@ -151,7 +154,7 @@ def summarizor(event):
         
         for title, link, summary in zip(news_df['Title'], news_df['Link'], news_df['Summary']):
             print('gggggggggggggg')
-            response_text = ('新聞標題:', title, '連結:', link, '摘要:', summary)
+            response_text = '新聞標題:{} 連結:{} 摘要:{}'.format(title, link, summary)
             
             line_bot_api.push_message(
                     event.source.user_id,
