@@ -34,7 +34,7 @@ line_bot_api = LineBotApi(config.get('line-bot', 'channel_access_token'))
 handler = WebhookHandler(config.get('line-bot', 'channel_secret'))
 
 def summarize(text, per):
-
+    spacy.cli.download("en_core_web_sm")
     nlp = spacy.load('en_core_web_sm')
     # 分句
     doc = nlp(text)
@@ -116,6 +116,7 @@ for title, content in zip(news_df['Title'], news_df['Content']):
     content = content.replace('\n', '').replace('\t', '').replace('\xa0', '')
     summary = summarize(content, 0.1)
     news_df['Summary'][index] = summary
+
 
 @app.route("/callback", methods=['POST'])
 def callback():
