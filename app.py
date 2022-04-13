@@ -24,50 +24,51 @@ from linebot.models import (
     ButtonsTemplate, MessageTemplateAction, DatetimePickerAction,
     PostbackEvent, PostbackTemplateAction, MessageAction
     )
-
+from transformers import pipeline
 
 app = Flask(__name__)
+summarizor = pipeline("summarization")
 config = configparser.ConfigParser()
 config.read('config.txt')
 
 line_bot_api = LineBotApi(config.get('line-bot', 'channel_access_token'))
 handler = WebhookHandler(config.get('line-bot', 'channel_secret'))
 
-def summarize(text, per):
-    nlp = spacy.load('en_core_web_sm')
-    # 分句
-    doc = nlp(text)
+# def summarize(text, per):
+#     nlp = spacy.load('en_core_web_sm')
+#     # 分句
+#     doc = nlp(text)
 
-    # 分詞
-    tokens = [token.text for token in doc]
+#     # 分詞
+#     tokens = [token.text for token in doc]
 
-    word_frequencies = {}
-    for word in doc:
-        if word.text.lower() not in list(STOP_WORDS):
-            if word.text.lower() not in punctuation:
-                if word.text not in word_frequencies.keys():
-                    word_frequencies[word.text] = 1
-                else:
-                    word_frequencies[word.text] += 1
+#     word_frequencies = {}
+#     for word in doc:
+#         if word.text.lower() not in list(STOP_WORDS):
+#             if word.text.lower() not in punctuation:
+#                 if word.text not in word_frequencies.keys():
+#                     word_frequencies[word.text] = 1
+#                 else:
+#                     word_frequencies[word.text] += 1
 
-    max_frequency = max(word_frequencies.values())
-    for word in word_frequencies.keys():
-        word_frequencies[word] = word_frequencies[word] / max_frequency
-    sentence_tokens = [sent for sent in doc.sents]
-    sentence_scores = {}
-    for sent in sentence_tokens:
-        for word in sent:
-            if word.text.lower() in word_frequencies.keys():
-                if sent not in sentence_scores.keys():                            
-                    sentence_scores[sent] = word_frequencies[word.text.lower()]
-                else:
-                    sentence_scores[sent] += word_frequencies[word.text.lower()]
-    select_length = int(len(sentence_tokens) * per)
-    summary = nlargest(select_length, sentence_scores, key = sentence_scores.get)
-    final_summary = [sent.text for sent in summary]
-    summary = ''.join(final_summary)
+#     max_frequency = max(word_frequencies.values())
+#     for word in word_frequencies.keys():
+#         word_frequencies[word] = word_frequencies[word] / max_frequency
+#     sentence_tokens = [sent for sent in doc.sents]
+#     sentence_scores = {}
+#     for sent in sentence_tokens:
+#         for word in sent:
+#             if word.text.lower() in word_frequencies.keys():
+#                 if sent not in sentence_scores.keys():                            
+#                     sentence_scores[sent] = word_frequencies[word.text.lower()]
+#                 else:
+#                     sentence_scores[sent] += word_frequencies[word.text.lower()]
+#     select_length = int(len(sentence_tokens) * per)
+#     summary = nlargest(select_length, sentence_scores, key = sentence_scores.get)
+#     final_summary = [sent.text for sent in summary]
+#     summary = ''.join(final_summary)
     
-    return summary
+#     return summary
 
 
 
@@ -98,11 +99,12 @@ def callback():
 def summarizor(event):
 
     if '新聞' in event.message.text:
-        spacy.cli.download("en_core_web_sm")
         line_bot_api.push_message(
                     event.source.user_id,
                     TextSendMessage(text='等我一下，我要消化一下..')
             )
+        # spacy.cli.download("en_core_web_sm")
+        
         # # 擷取每日新聞摘要
         # 新聞主頁
         request = rq.get("https://venturebeat.com/")
@@ -145,15 +147,14 @@ def summarizor(event):
         news_df.insert(6, 'Summary', '')
 
         for title, content in zip(news_df['Title'], news_df['Content']):
-            print('ffffffffffff')
             index = news_df['Title'] == title
             content = content.replace('\n', '').replace('\t', '').replace('\xa0', '')
-            summary = summarize(content, 0.1)
+            summary = summarizor(content, min_length = 5, max_length = 120)
+            # summary = summarize(content, 0.1)
             news_df['Summary'][index] = summary
 
         
         for title, link, summary in zip(news_df['Title'], news_df['Link'], news_df['Summary']):
-            print('gggggggggggggg')
             response_text = '新聞標題: {} \n連結: {} \n摘要: \n{}'.format(title, link, summary)
             
             line_bot_api.push_message(
